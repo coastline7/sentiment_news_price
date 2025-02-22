@@ -117,7 +117,9 @@ def main():
             'Company_encoded': [code],
             'Sentiment_encoded': [sentiment]
         })
-        # Повторяем значение признаков для каждой записи, чтобы получить форму (None, 9, 1)
+        # Преобразуем DataFrame в numpy-массив с нужным типом
+        input_data = np.array(input_data, dtype=np.float32)
+        # Добавляем новое измерение, чтобы получить форму (1, 9, 1)
         input_data = np.expand_dims(input_data, axis=2)
         prediction = loaded_model.predict(input_data)
         decision_classes = ['Купить', 'Держать', 'Продать']
