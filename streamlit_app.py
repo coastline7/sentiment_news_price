@@ -26,8 +26,20 @@ runtime.exists()
 
 # Определяем функцию main()
 def main():
-    # Создание экземпляра анализатора сентиментов
-    sid = SentimentIntensityAnalyzer()
+    # Добавляем информацию в левый верхний угол
+    st.markdown(
+        """
+        <div style="position: fixed; top: 0; left: 0; background-color: rgba(255,255,255,0.9); 
+                    padding: 10px; border-radius: 5px; box-shadow: 2px 2px 5px rgba(0,0,0,0.1); z-index: 1000;">
+            <h4 style="margin: 0;">Выпускная квалификационная работа</h4>
+            <p style="margin: 0;">Web-приложения для анализа валютного рынка</p>
+            <p style="margin: 0;">УБВТ2102 Оганнисян А.С.</p>
+        </div>
+        """, unsafe_allow_html=True
+    )
+
+    # Основной заголовок приложения
+    st.title('Рекомендации по акциям')
 
     # Словарь сопоставления названий компаний и их тикеров
     tickers_alphabet = {
@@ -55,6 +67,7 @@ def main():
         'Tesla': 8
     }
 
+    # Функция для получения цены закрытия
     def get_closing_price(ticker, date):
         end_date = date + pd.Timedelta(days=1)
         start_date = date - pd.Timedelta(days=7)
@@ -67,6 +80,7 @@ def main():
             st.error(f"Error downloading stock data for {ticker}: {e}")
             return None
 
+    # Функция для получения новостей
     def fetch_news(company_name, date):
         date_str = date.strftime('%Y-%m-%d')
         end_date_str = (date + datetime.timedelta(days=1)).strftime('%Y-%m-%d')
@@ -80,7 +94,9 @@ def main():
             st.error(f"Failed to fetch news: {response.text}")
             return []
 
+    # Функция анализа сентимента новостей
     def analyze_sentiment(news):
+        sid = SentimentIntensityAnalyzer()
         if not news:
             return 1
         scores = [sid.polarity_scores(article)['compound'] for article in news]
@@ -91,6 +107,7 @@ def main():
             return 0
         return 1
 
+    # Функция получения торговой рекомендации
     def get_decision(date, company_name):
         ticker = tickers_alphabet[company_name]
         news = fetch_news(company_name, date)
@@ -125,8 +142,7 @@ def main():
         decision_classes = ['Купить', 'Держать', 'Продать']
         return decision_classes[np.argmax(prediction)]
 
-    st.title('Рекомендации по акциям')
-
+    # Элементы интерфейса Streamlit
     company = st.selectbox('Выберите компанию:', list(tickers_alphabet.keys()))
     date = st.date_input('Выберите дату:', min_value=datetime.date.today() - datetime.timedelta(days=365), max_value=datetime.date.today())
 
